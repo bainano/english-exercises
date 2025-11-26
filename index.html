@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>翻译答题页面</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", Arial, sans-serif;
+        }
+        body {
+            background-color: #fff;
+            padding: 20px;
+            padding-bottom: 120px;
+            min-height: 100vh;
+        }
+        button, button:focus, button:active, button:hover {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+        .close-btn {
+            font-size: 24px;
+            color: #ccc;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .progress-bar {
+            flex: 1;
+            height: 12px;
+            background-color: #eee;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 25%;
+            background-color: #4CAF50;
+            border-radius: 6px;
+        }
+        .page-title {
+            font-size: 24px;
+            color: #333;
+            margin: 20px 0;
+        }
+        .avatar-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        .dialog-box {
+            padding: 12px 20px;
+            background-color: #fff;
+            border: 2px solid #eee;
+            border-radius: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        .answer-area {
+            display: flex;
+            gap: 12px;
+            margin: 0 auto 30px;
+            min-height: 50px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            max-width: 90%;
+            flex-wrap: wrap;
+        }
+        .word-btn {
+            padding: 10px 12px;
+            border-radius: 20px;
+            background-color: #d7ffb8;
+            border: 2px solid #b8f18d;
+            color: #6aae22;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 3px 0 #b8f18d;
+        }
+        .word-btn:active {
+            box-shadow: none;
+            top: 3px;
+        }
+        .candidate-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 0 auto;
+            max-width: 90%;
+        }
+        .candidate-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            min-height: 42px;
+        }
+        .candidate-item {
+            padding: 0;
+            margin: 0;
+            height: 42px;
+        }
+        .candidate-btn {
+            padding: 10px 12px;
+            border-radius: 20px;
+            background-color: #fff;
+            border: 2px solid #eee;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 3px 0 #eee;
+            box-sizing: border-box; /* 确保padding和border包含在元素的总宽度内 */
+            min-width: 60px;
+            text-align: center;
+        }
+        .candidate-btn:active {
+            box-shadow: none;
+            top: 3px;
+        }
+        .candidate-placeholder {
+            padding: 10px 12px;
+            border-radius: 20px;
+            background-color: #f5f5f5;
+            border: 2px dashed #eee;
+            color: transparent;
+            display: none;
+            box-sizing: border-box; /* 确保padding和border包含在元素的总宽度内 */
+            min-width: 60px;
+            text-align: center;
+        }
+        .bottom-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            background-color: #fff;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .tip-bar {
+            background-color: #f0fce0;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            border-radius: 8px;
+            display: none;
+        }
+        .tip-icon {
+            color: #4CAF50;
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        .tip-text {
+            font-size: 18px;
+            color: #4CAF50;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: #fff;
+            font-size: 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 4px 0 #388E3C;
+        }
+        .action-btn:active {
+            box-shadow: none;
+            top: 4px;
+        }
+        
+        /* 进度提示弹窗样式 */
+        .progress-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .progress-modal-content {
+            background-color: #fff;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .progress-modal-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .progress-modal-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .progress-modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .progress-modal-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .progress-modal-button:hover {
+            filter: brightness(1.05);
+        }
+        
+        .progress-modal-button:active {
+            transform: translateY(2px);
+        }
+        
+        .progress-modal-button.restart {
+            background-color: #fff;
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 3px 0 #4CAF50;
+        }
+        
+        .progress-modal-button.restart:active {
+            box-shadow: none;
+        }
+        
+        .progress-modal-button.continue,
+        .progress-modal-button.go-to-banks {
+            background-color: #4CAF50;
+            color: #fff;
+            box-shadow: 0 3px 0 #388E3C;
+        }
+        
+        .progress-modal-button.continue:active,
+        .progress-modal-button.go-to-banks:active {
+            box-shadow: none;
+        }
+        /* === 新增样式：题库按钮 & 弹窗 === */
+        .question-bank-btn {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 3px 0 #388E3C;
+            margin-left: 10px;
+        }
+        .question-bank-btn:active {
+            box-shadow: none;
+            top: 3px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .candidate-btn, .candidate-placeholder, .word-btn {
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+            
+            .candidate-row {
+                gap: 8px;
+            }
+            
+            .answer-area {
+                gap: 8px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .candidate-btn, .candidate-placeholder, .word-btn {
+                font-size: 12px;
+                padding: 6px 8px;
+            }
+            
+            .candidate-row {
+                gap: 6px;
+            }
+            
+            .answer-area {
+                gap: 6px;
+                padding: 8px;
+            }
+            
+            .page-title {
+                font-size: 20px;
+            }
+            
+            .dialog-box {
+                font-size: 16px;
+                padding: 10px 15px;
+            }
+        }
+        .bank-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .bank-modal {
+            background-color: #fff;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .modal-title {
+            font-size: 20px;
+            color: #333;
+        }
+        .modal-close {
+            font-size: 24px;
+            color: #ccc;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        .modal-section {
+            margin-bottom: 15px;
+        }
+        .section-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .file-input-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-input-label {
+            display: block;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border: 2px dashed #eee;
+            border-radius: 8px;
+            text-align: center;
+            color: #999;
+            cursor: pointer;
+        }
+        .template-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .question-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .question-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .question-text {
+            font-size: 14px;
+            color: #333;
+        }
+        .question-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            color: #666;
+            cursor: pointer;
+        }
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: #fff;
+            box-shadow: 0 3px 0 #388E3C;
+        }
+        .btn-primary:active {
+            box-shadow: none;
+            top: 3px;
+        }
+        .btn-secondary {
+            background-color: #f5f5f5;
+            color: #333;
+            box-shadow: 0 3px 0 #eee;
+        }
+        .btn-secondary:active {
+            box-shadow: none;
+            top: 3px;
+        }
+    </style>
+</head>
+<body>
+<!-- 顶部区域 -->
+<div style="display: flex; align-items: center;">
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+    <button class="question-bank-btn" id="questionBankBtn">题库</button>
+</div>
+<!-- 标题 -->
+<div class="page-title">翻译这句话</div>
+<!-- 对话框区域 -->
+<div class="avatar-area">
+    <div class="dialog-box" id="questionDialog">你爱运动吗？</div>
+</div>
+<!-- 答题区 -->
+<div class="answer-area" id="answerArea"></div>
+<!-- 候选区 -->
+<div class="candidate-area" id="candidateArea">
+    <!-- 将由 JavaScript 动态生成候选单词 -->
+</div>
+<!-- 底部操作区 -->
+<div class="bottom-area">
+        <div class="tip-bar" id="tipBar">
+            <div class="tip-icon">✔</div>
+            <div class="tip-text">好棒！</div>
+        </div>
+        <!-- 完成提示区 -->
+        <div class="completion-area" id="completionArea" style="display: none; text-align: center; padding: 20px;">
+            <p style="font-size: 18px; margin-bottom: 20px;">恭喜你完成了所有的题目，你可以点击重新开始或切换题库</p>
+            <img src="image.png" alt="完成图片" style="max-width: 200px; height: auto; margin-bottom: 20px;">
+            <button class="action-btn" id="restartBtn">重新开始</button>
+        </div>
+        <button class="action-btn" id="mainBtn">检查</button>
+    </div>
+    
+    <!-- 进度提示弹窗 -->
+    <div class="progress-modal" id="progressModal" style="display: none;">
+        <div class="progress-modal-content">
+            <h3 class="progress-modal-title" id="progressModalTitle">检测到未完成进度</h3>
+            <p class="progress-modal-text" id="progressModalText">检测到上一次未完成的进度，是继续还是重新开始？</p>
+            <div class="progress-modal-buttons">
+                <button class="progress-modal-button restart" id="restartProgressBtn">重新开始</button>
+                <button class="progress-modal-button continue" id="continueProgressBtn">继续上一次</button>
+                <button class="progress-modal-button go-to-banks" id="goToBanksBtn" style="display: none;">进入题库页面</button>
+            </div>
+        </div>
+    </div>
+<!-- 题库弹窗 -->
+<div class="bank-modal-overlay" id="bankModalOverlay">
+    <div class="bank-modal">
+        <div class="modal-header">
+            <h3 class="modal-title">题库管理</h3>
+            <button class="modal-close" id="modalCloseBtn">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-section">
+                <h4 class="section-title">导入题库</h4>
+                <p class="template-desc">
+                    模板格式：<br>
+                    第一行第一格为标题（可空），第二格为答案说明；<br>
+                    后续每行：第一列为中文句子，第二列为英文答案（单词间空格分隔）
+                </p>
+                <div class="file-input-container">
+                    <label for="fileInput" class="file-input-label">点击选择文件</label>
+                    <input type="file" class="file-input" id="fileInput" accept=".txt" />
+                </div>
+            </div>
+            <div class="modal-section">
+                <h4 class="section-title">题库列表</h4>
+                <div class="question-list" id="questionList">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn btn-secondary" id="modalCancelBtn">取消</button>
+            <button class="modal-btn btn-primary" id="modalSaveBtn">保存</button>
+        </div>
+    </div>
+</div>
+<script>
+    // 当前题目与答案
+    let currentQuestion = "你爱运动吗？";
+    let correctAnswer = [];
+    // 题库数据
+    let questionBank = [];
+    
+    // 进度管理相关常量
+    const PROGRESS_STORAGE_KEY = 'questionProgress';
+    
+    // 进度数据结构
+    // {
+    //   bankId: 'string', // 题库标识
+    //   currentIndex: number, // 当前题目索引
+    //   completionStatus: 'in_progress' | 'completed', // 完成状态
+    //   lastSaved: timestamp // 最后保存时间
+    // }
+    
+    // 获取当前题库的唯一标识
+    function getCurrentBankId() {
+        // 使用题库内容的简单哈希作为唯一标识
+        const bankContent = JSON.stringify(questionBank.map(q => q.answer));
+        let hash = 0;
+        for (let i = 0; i < bankContent.length; i++) {
+            const char = bankContent.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // 转换为32位整数
+        }
+        return `bank_${hash}`;
+    }
+    
+    // 保存进度
+    function saveProgress(isCompleted = null) {
+        try {
+            // 如果没有显式指定完成状态，则根据当前索引判断
+            let completionStatus;
+            if (isCompleted !== null) {
+                completionStatus = isCompleted ? 'completed' : 'in_progress';
+            } else {
+                completionStatus = currentQuestionIndex === questionBank.length - 1 ? 'completed' : 'in_progress';
+            }
+            
+            const progressData = {
+                bankId: getCurrentBankId(),
+                currentIndex: currentQuestionIndex,
+                completionStatus: completionStatus,
+                lastSaved: Date.now()
+            };
+            
+            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progressData));
+            console.log('进度已保存:', progressData);
+        } catch (error) {
+            console.error('保存进度失败:', error);
+        }
+    }
+    
+    // 加载进度
+    function loadProgress() {
+        try {
+            const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            if (savedProgress) {
+                const progressData = JSON.parse(savedProgress);
+                const currentBankId = getCurrentBankId();
+                
+                // 检查是否为当前题库的进度
+                if (progressData.bankId === currentBankId) {
+                    return progressData;
+                }
+            }
+        } catch (error) {
+            console.error('加载进度失败:', error);
+        }
+        return null;
+    }
+    
+    // 清除进度
+    function clearProgress() {
+        try {
+            localStorage.removeItem(PROGRESS_STORAGE_KEY);
+            console.log('进度已清除');
+        } catch (error) {
+            console.error('清除进度失败:', error);
+        }
+    }
+    
+    // 显示进度提示弹窗
+    function showProgressModal() {
+        const progressData = loadProgress();
+        const modal = document.getElementById('progressModal');
+        const title = document.getElementById('progressModalTitle');
+        const text = document.getElementById('progressModalText');
+        const continueBtn = document.getElementById('continueProgressBtn');
+        const goToBanksBtn = document.getElementById('goToBanksBtn');
+        
+        if (progressData) {
+            if (progressData.completionStatus === 'completed') {
+                // 已完成全部题目的情况
+                title.textContent = '已完成全部题目';
+                text.textContent = '检测到你上次已完成该题库所有题目，是重新开始，还是切换题库？';
+                continueBtn.style.display = 'none';
+                goToBanksBtn.style.display = 'inline-block';
+            } else {
+                // 未完成的情况
+                title.textContent = '检测到未完成进度';
+                text.textContent = '检测到上一次未完成的进度，是继续还是重新开始？';
+                continueBtn.style.display = 'inline-block';
+                goToBanksBtn.style.display = 'none';
+            }
+            
+            modal.style.display = 'flex';
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // 隐藏进度提示弹窗
+    function hideProgressModal() {
+        const modal = document.getElementById('progressModal');
+        modal.style.display = 'none';
+    }
+    
+    // 继续上一次进度
+    function continueLastProgress() {
+        const progressData = loadProgress();
+        if (progressData && progressData.completionStatus === 'in_progress') {
+            currentQuestionIndex = progressData.currentIndex;
+            const question = questionBank[currentQuestionIndex];
+            currentQuestion = question.question;
+            correctAnswer = question.answer.split(' ').filter(w => w);
+            renderQuestion();
+            updateProgressBar();
+            console.log('已继续上一次进度，当前题目索引:', currentQuestionIndex);
+        }
+        hideProgressModal();
+    }
+    
+    // 重新开始
+    function restart() {
+        clearProgress();
+        currentQuestionIndex = 0;
+        const firstQuestion = questionBank[0];
+        currentQuestion = firstQuestion.question;
+        correctAnswer = firstQuestion.answer.split(' ').filter(w => w);
+        renderQuestion();
+        updateProgressBar();
+        
+        // 隐藏相关界面元素
+        hideProgressModal();
+        document.getElementById('completionArea').style.display = 'none';
+        document.getElementById('mainBtn').style.display = 'block';
+        document.getElementById('mainBtn').textContent = '检查';
+        document.getElementById('tipBar').style.display = 'none';
+        
+        console.log('已重新开始');
+    }
+    
+    // 从 localStorage 加载题库数据
+    function loadQuestionBankFromStorage() {
+        const QUESTION_BANKS_KEY = 'questionBanks';
+        const CURRENT_BANK_KEY = 'currentBank';
+        
+        try {
+            const storedBanks = localStorage.getItem(QUESTION_BANKS_KEY);
+            const currentBankName = localStorage.getItem(CURRENT_BANK_KEY) || '默认题库';
+            
+            console.log('从localStorage获取的数据:', storedBanks);
+            console.log('当前题库名称:', currentBankName);
+            
+            if (storedBanks) {
+                const banks = JSON.parse(storedBanks);
+                console.log('解析后的题库数据:', banks);
+                if (banks[currentBankName] && banks[currentBankName].length > 0) {
+                    // 转换题库格式以适配现有代码
+                    questionBank = banks[currentBankName].map(item => ({
+                        question: item.hint || item.correctSentence,
+                        answer: item.correctSentence
+                    }));
+                    console.log('转换后的题库:', questionBank);
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.error('加载题库数据出错:', error);
+        }
+        return false;
+    }
+    // 所有候选词位置映射
+    const wordPositions = {};
+    // 初始化函数
+    function init() {
+        // 尝试从 localStorage 加载题库数据
+        if (loadQuestionBankFromStorage()) {
+            // 如果成功加载，使用第一题作为当前题目
+            if (questionBank.length > 0) {
+                const firstQuestion = questionBank[0];
+                currentQuestion = firstQuestion.question;
+                correctAnswer = firstQuestion.answer.split(' ').filter(w => w);
+            }
+        }
+        renderQuestion();
+        initEventListeners();
+        updateQuestionList(); // 渲染初始题库
+    }
+    // 初始化事件监听
+    function initEventListeners() {
+        document.getElementById('questionBankBtn').addEventListener('click', () => {
+            window.location.href = 'questions.html';
+        });
+        document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+        document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+        document.getElementById('bankModalOverlay').addEventListener('click', e => {
+            if (e.target === document.getElementById('bankModalOverlay')) closeModal();
+        });
+        // 文件上传
+        document.getElementById('fileInput').addEventListener('change', handleFileImport);
+        // 保存题库
+        document.getElementById('modalSaveBtn').addEventListener('click', saveQuestionBank);
+    }
+    // 关闭模态框
+    function closeModal() {
+        document.getElementById('bankModalOverlay').style.display = 'none';
+        document.getElementById('fileInput').value = ''; // 清空文件选择
+    }
+    // 处理文件导入
+    function handleFileImport(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const content = event.target.result;
+            const lines = content.split('\n').map(line => line.trim()).filter(Boolean);
+            const imported = [];
+            for (let i = 0; i < lines.length; i++) {
+                // 首先尝试逗号分隔
+                let cols = lines[i].split(',');
+                // 如果没有逗号，则按空格分割
+                if (cols.length < 2) {
+                    cols = lines[i].split(/\s+/);
+                }
+                
+                // 取第一个为问题，其余部分组合为答案
+                if (cols.length >= 2) {
+                    const q = cols[0]?.trim();
+                    const a = cols.slice(1).join(' ').trim();
+                    if (q && a) {
+                        imported.push({ question: q, answer: a });
+                    }
+                }
+            }
+            if (imported.length > 0) {
+                questionBank = imported;
+                currentQuestionIndex = 0; // 重置题目索引
+                const firstQuestion = questionBank[0];
+                currentQuestion = firstQuestion.question;
+                correctAnswer = firstQuestion.answer.split(' ').filter(w => w);
+                updateQuestionList();
+                renderQuestion();
+                updateProgressBar(); // 更新进度条
+            } else {
+                alert("未检测到有效题目，请检查格式！");
+            }
+        };
+        reader.readAsText(file);
+    }
+    // 更新题库列表（动态渲染）
+    function updateQuestionList() {
+        const container = document.getElementById('questionList');
+        container.innerHTML = '';
+        questionBank.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'question-item';
+            const textSpan = document.createElement('span');
+            textSpan.className = 'question-text';
+            textSpan.textContent = `${item.question} - ${item.answer}`;
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'question-actions';
+            const editBtn = document.createElement('button');
+            editBtn.className = 'action-icon';
+            editBtn.textContent = '✏️';
+            editBtn.dataset.index = index;
+            editBtn.addEventListener('click', () => useQuestion(index));
+            const delBtn = document.createElement('button');
+            delBtn.className = 'action-icon';
+            delBtn.textContent = '🗑️';
+            delBtn.dataset.index = index;
+            delBtn.addEventListener('click', () => deleteQuestion(index));
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(delBtn);
+            div.appendChild(textSpan);
+            div.appendChild(actionsDiv);
+            container.appendChild(div);
+        });
+    }
+    // 使用某一道题
+    function useQuestion(index) {
+        currentQuestionIndex = index; // 更新当前题目索引
+        const item = questionBank[index];
+        currentQuestion = item.question;
+        correctAnswer = item.answer.split(' ').filter(w => w);
+        renderQuestion();
+        updateProgressBar(); // 更新进度条
+        closeModal();
+    }
+    // 删除题目
+    function deleteQuestion(index) {
+        if (confirm("确定删除这道题吗？")) {
+            questionBank.splice(index, 1);
+            updateQuestionList();
+        }
+    }
+    // 保存题库（目前就是关闭）
+    function saveQuestionBank() {
+        closeModal();
+    }
+    // 渲染当前题目和候选词
+    function renderQuestion() {
+        document.getElementById('questionDialog').textContent = currentQuestion;
+        // 清空候选区
+        const area = document.getElementById('candidateArea');
+        area.innerHTML = '';
+        // 构建所有可能的候选词（包括正确答案和其他干扰项）
+        // 从题库中获取干扰词
+        let allWords = [];
+        if (questionBank.length > 1) {
+            // 获取下一题的索引
+            const nextIndex = (currentQuestionIndex + 1) % questionBank.length;
+            // 从下一题中获取单词作为干扰项
+            const nextQuestionWords = questionBank[nextIndex].answer.split(' ').filter(w => w);
+            allWords = [...nextQuestionWords];
+        } else {
+            // 如果只有一题，则使用默认干扰词
+            allWords = ["and", "from", "something", "ticket", "like", "very", "much"];
+        }
+        
+        // 去重并排除正确答案中的词
+        const uniqueWords = [...new Set([
+            ...correctAnswer,
+            ...allWords
+        ])].filter(word => !correctAnswer.includes(word));
+        
+        const candidates = [...correctAnswer, ...uniqueWords.slice(0, 3)]; // 正确词 + 干扰词
+        shuffleArray(candidates);
+        // 分三行布局
+        const rows = [[], [], []];
+        for (let i = 0; i < candidates.length; i++) {
+            rows[i % 3].push(candidates[i]);
+        }
+        rows.forEach((row, idx) => {
+            const rowEl = document.createElement('div');
+            rowEl.className = 'candidate-row';
+            row.forEach(word => {
+                const item = document.createElement('div');
+                item.className = 'candidate-item';
+                const btn = document.createElement('button');
+                btn.className = 'candidate-btn';
+                btn.dataset.word = word;
+                btn.textContent = word;
+                const placeholder = document.createElement('div');
+                placeholder.className = 'candidate-placeholder';
+                placeholder.dataset.word = word; // 添加data-word属性便于查找
+                placeholder.textContent = word;
+                item.appendChild(btn);
+                item.appendChild(placeholder);
+                rowEl.appendChild(item);
+            });
+            area.appendChild(rowEl);
+        });
+        // 重新初始化单词位置
+        initWordPositions();
+        // 重置界面
+        document.getElementById('answerArea').innerHTML = '';
+        document.getElementById('tipBar').style.display = 'none';
+        document.getElementById('mainBtn').textContent = '检查';
+    }
+    // 初始化候选词位置记录
+    function initWordPositions() {
+        Object.keys(wordPositions).forEach(key => {
+            delete wordPositions[key];
+        });
+        document.querySelectorAll('.candidate-btn').forEach(btn => {
+            const word = btn.dataset.word;
+            const parentItem = btn.parentElement;
+            wordPositions[word] = {
+                btn: btn,
+                placeholder: parentItem.querySelector('.candidate-placeholder')
+            };
+        });
+    }
+    // Fisher-Yates 洗牌算法
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+    // 答题区交互
+    document.getElementById('candidateArea').addEventListener('click', function(e) {
+        if (e.target.classList.contains('candidate-btn')) {
+            const word = e.target.dataset.word;
+            const pos = wordPositions[word];
+            setTimeout(() => {
+ pos.btn.style.display = 'none';
+ pos.placeholder.style.display = 'inline-block';
+                const answerBtn = document.createElement('button');
+                answerBtn.className = 'word-btn selected';
+                answerBtn.dataset.word = word;
+                answerBtn.textContent = word;
+                document.getElementById('answerArea').appendChild(answerBtn);
+            }, 50);
+        }
+    });
+    document.getElementById('answerArea').addEventListener('click', function(e) {
+        if (e.target.classList.contains('word-btn')) {
+            const word = e.target.dataset.word;
+            const pos = wordPositions[word];
+            setTimeout(() => {
+ e.target.remove();
+                if (pos) {
+ pos.btn.style.display = 'inline-block';
+ pos.placeholder.style.display = 'none';
+                }
+            }, 50);
+        }
+    });
+    // 当前题目索引
+    let currentQuestionIndex = 0;
+    
+    // 更新进度条
+    function updateProgressBar() {
+        const progressFill = document.querySelector('.progress-fill');
+        if (progressFill && questionBank.length > 0) {
+            const progressPercentage = ((currentQuestionIndex + 1) / questionBank.length) * 100;
+            progressFill.style.width = progressPercentage + '%';
+        }
+    }
+    
+    // 检查答案
+    document.getElementById('mainBtn').addEventListener('click', function() {
+        const btn = document.getElementById('mainBtn');
+        const tipBar = document.getElementById('tipBar');
+        const completionArea = document.getElementById('completionArea');
+        if (btn.textContent === '检查') {
+            const selectedWords = Array.from(document.getElementById('answerArea').children)
+                .map(el => el.dataset.word);
+            if (JSON.stringify(selectedWords) === JSON.stringify(correctAnswer)) {
+                tipBar.style.display = 'flex';
+                // 检查是否是最后一题
+                if (currentQuestionIndex === questionBank.length - 1) {
+                    // 保存全部完成状态
+                    saveProgress(true); // 显式标记为已完成
+                    // 最后一题答对，显示完成提示
+                    btn.style.display = 'none';
+                    completionArea.style.display = 'block';
+                } else {
+                    // 在显示"很棒"提示时立即保存下一题的索引
+                    const nextIndex = (currentQuestionIndex + 1) % questionBank.length;
+                    // 临时更新currentQuestionIndex以保存下一题索引
+                    const tempIndex = currentQuestionIndex;
+                    currentQuestionIndex = nextIndex;
+                    // 保存进度但不标记为完成
+                    saveProgress(false);
+                    // 恢复currentQuestionIndex以便正确切换到下一题
+                    currentQuestionIndex = tempIndex;
+                    btn.textContent = '继续';
+                }
+            } else {
+                alert('答案不正确，再试试吧！');
+            }
+        } else {
+            // 切换到下一题
+            currentQuestionIndex = (currentQuestionIndex + 1) % questionBank.length;
+            const nextQuestion = questionBank[currentQuestionIndex];
+            currentQuestion = nextQuestion.question;
+            correctAnswer = nextQuestion.answer.split(' ').filter(w => w);
+            renderQuestion();
+            updateProgressBar(); // 更新进度条
+            btn.textContent = '检查';
+            tipBar.style.display = 'none';
+        }
+    });
+    
+    // 重新开始按钮事件
+    document.getElementById('restartBtn').addEventListener('click', function() {
+        restart();
+    });
+    
+    // 进度提示弹窗按钮事件处理
+    document.getElementById('restartProgressBtn').addEventListener('click', function() {
+        restart();
+    });
+    
+    document.getElementById('continueProgressBtn').addEventListener('click', function() {
+        continueLastProgress();
+    });
+    
+    document.getElementById('goToBanksBtn').addEventListener('click', function() {
+        hideProgressModal();
+        window.location.href = 'questions.html';
+    });
+    // 页面加载完成后执行
+    window.onload = function () {
+        init();
+        initEventListeners();
+        renderQuestion();
+        updateProgressBar(); // 初始化进度条
+        // 检查是否有未完成进度
+        showProgressModal();
+        // 确保在页面加载完成后调整占位块尺寸
+        setTimeout(updatePlaceholderSizes, 100);
+    };
+    
+    // 更新所有占位块的尺寸以匹配对应按钮
+    function updatePlaceholderSizes() {
+        const buttons = document.querySelectorAll('.candidate-btn');
+        buttons.forEach(btn => {
+            const word = btn.dataset.word;
+            // 使用最近选择器找到对应的占位块
+            const item = btn.closest('.candidate-item');
+            if (item) {
+                const placeholder = item.querySelector('.candidate-placeholder');
+                if (placeholder) {
+                    const computedStyle = window.getComputedStyle(btn);
+                    placeholder.style.width = computedStyle.width;
+                    placeholder.style.height = computedStyle.height;
+                    placeholder.style.paddingLeft = computedStyle.paddingLeft;
+                    placeholder.style.paddingRight = computedStyle.paddingRight;
+                    placeholder.style.paddingTop = computedStyle.paddingTop;
+                    placeholder.style.paddingBottom = computedStyle.paddingBottom;
+                    placeholder.style.borderLeftWidth = computedStyle.borderLeftWidth;
+                    placeholder.style.borderRightWidth = computedStyle.borderRightWidth;
+                    placeholder.style.borderTopWidth = computedStyle.borderTopWidth;
+                    placeholder.style.borderBottomWidth = computedStyle.borderBottomWidth;
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

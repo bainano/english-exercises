@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库管理 | 单词拼句练习</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial Rounded MT Bold', 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* 顶部导航 */
+        .header {
+            background-color: #58cc02;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .back-btn {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .back-btn:hover {
+            background-color: rgba(255,255,255,0.3);
+        }
+
+        /* 主要内容区 */
+        .main {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 导入区域 */
+        .import-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .import-desc {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .import-hint {
+            color: #999;
+            font-size: 12px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .import-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            align-self: flex-start;
+        }
+        .import-btn:hover {
+            background-color: #0056b3;
+        }
+        .file-input {
+            display: none;
+        }
+
+        /* 题库列表 */
+        .banks-section {
+            margin-top: 20px;
+        }
+        .bank-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .bank-item {
+            position: relative;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .bank-item:hover {
+            background-color: #e9ecef;
+        }
+        .bank-item.active {
+            background-color: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+        .bank-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bank-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+        .bank-stats {
+            font-size: 12px;
+            color: #666;
+        }
+        .bank-action {
+            position: absolute;
+            top: 0;
+            right: -80px;
+            width: 80px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #dc3545;
+            color: white;
+            transition: right 0.3s ease;
+        }
+        .bank-item.show-action .bank-action {
+            right: 0;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* 提示动画 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .toast-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .toast-error {
+            background-color: #dc3545;
+            color: white;
+        }
+        .toast-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="logo">题库管理</div>
+        <button class="back-btn" id="backBtn">返回练习</button>
+    </header>
+
+    <!-- 主要内容区 -->
+    <main class="main">
+        <!-- 导入区域 -->
+        <div class="card">
+            <h2 class="card-title">导入题库</h2>
+            <div class="import-section">
+                <p class="import-desc">导入CSV格式的题库文件，支持自定义单词拼句练习题目。</p>
+                <p class="import-hint">
+                    CSV文件格式说明：<br>
+                    - 第一行：标题行（忽略）<br>
+                    - 每行格式：正确句子,翻译<br>
+                    - 示例：I love coding,我喜欢编程<br>
+                    系统将自动提取单词并随机打乱顺序。<br>
+                    请确保编码为UTF-8格式。
+                </p>
+                <input type="file" id="fileInput" class="file-input" accept=".csv">
+                <button class="import-btn" id="importBtn">选择CSV文件</button>
+            </div>
+        </div>
+
+        <!-- 题库列表 -->
+        <div class="card banks-section">
+            <h2 class="card-title">题库列表</h2>
+            <div class="bank-list" id="bankList">
+                <!-- 题库列表将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 提示条 -->
+    <div class="toast toast-success" id="successToast">操作成功！</div>
+    <div class="toast toast-error" id="errorToast">操作失败，请重试。</div>
+    <div class="toast toast-info" id="infoToast">提示信息</div>
+
+    <script>
+        // LocalStorage存储键名
+        const QUESTION_BANKS_KEY = 'questionBanks';
+        const CURRENT_BANK_KEY = 'currentBank';
+        
+        // DOM元素
+        const fileInput = document.getElementById('fileInput');
+        const importBtn = document.getElementById('importBtn');
+        const bankList = document.getElementById('bankList');
+        const backBtn = document.getElementById('backBtn');
+        const successToast = document.getElementById('successToast');
+        const errorToast = document.getElementById('errorToast');
+        const infoToast = document.getElementById('infoToast');
+        
+        // 滑动相关变量
+        let startX = 0;
+        let currentBankItem = null;
+        
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            loadBanks();
+            setupEventListeners();
+        });
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 返回按钮点击事件
+            backBtn.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+            
+            // 导入按钮点击事件
+            importBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // 文件选择事件
+            fileInput.addEventListener('change', handleFileImport);
+            
+            // 触摸事件处理
+            document.addEventListener('touchstart', handleTouchStart);
+            document.addEventListener('touchmove', handleTouchMove);
+            document.addEventListener('touchend', handleTouchEnd);
+            
+            // 鼠标事件处理（桌面端支持）
+            document.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+        
+        // 加载题库列表
+        function loadBanks() {
+            const storedBanks = localStorage.getItem(QUESTION_BANKS_KEY);
+            const currentBankName = localStorage.getItem(CURRENT_BANK_KEY) || '默认题库';
+            
+            if (!storedBanks) {
+                bankList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">暂无题库</p>';
+                return;
+            }
+            
+            const banks = JSON.parse(storedBanks);
+            bankList.innerHTML = '';
+            
+            Object.keys(banks).forEach(bankName => {
+                const bank = banks[bankName];
+                const bankItem = document.createElement('div');
+                bankItem.className = `bank-item ${bankName === currentBankName ? 'active' : ''}`;
+                bankItem.dataset.bankName = bankName;
+                
+                bankItem.innerHTML = `
+                    <div class="bank-info">
+                        <div class="bank-name">${bankName}</div>
+                        <div class="bank-stats">${bank.length} 题</div>
+                    </div>
+                    <div class="bank-action">
+                        <button class="delete-btn" data-bank-name="${bankName}">删除</button>
+                    </div>
+                `;
+                
+                // 点击题库项选择当前题库
+                bankItem.addEventListener('click', (e) => {
+                    // 如果点击的是删除按钮，不触发选择
+                    if (e.target.classList.contains('delete-btn')) return;
+                    
+                    // 移除所有active类
+                    document.querySelectorAll('.bank-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // 添加active类并保存当前题库
+                    bankItem.classList.add('active');
+                    localStorage.setItem(CURRENT_BANK_KEY, bankName);
+                    showToast('infoToast', `已切换到「${bankName}」`);
+                });
+                
+                // 删除按钮事件
+                const deleteBtn = bankItem.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 阻止冒泡
+                    deleteBank(bankName);
+                });
+                
+                bankList.appendChild(bankItem);
+            });
+        }
+        
+        // 处理文件导入
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // 检查文件类型
+            if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                showToast('errorToast', '请选择CSV格式的文件！');
+                fileInput.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const csvText = e.target.result;
+                    const questions = parseCSV(csvText);
+                    
+                    if (questions.length === 0) {
+                        showToast('errorToast', 'CSV文件解析失败或没有有效题目！');
+                        return;
+                    }
+                    
+                    // 提示用户输入题库名称
+                    const bankName = prompt('请输入题库名称：', `自定义题库_${new Date().getTime()}`);
+                    if (!bankName || bankName.trim() === '') {
+                        showToast('errorToast', '题库名称不能为空！');
+                        return;
+                    }
+                    
+                    // 保存题库
+                    saveBank(bankName.trim(), questions);
+                    showToast('successToast', `题库「${bankName}」导入成功！`);
+                    
+                    // 重新加载题库列表
+                    loadBanks();
+                    
+                } catch (error) {
+                    console.error('导入失败：', error);
+                    showToast('errorToast', '文件解析失败，请检查格式！');
+                }
+            };
+            
+            reader.onerror = () => {
+                showToast('errorToast', '文件读取失败！');
+            };
+            
+            reader.readAsText(file, 'UTF-8');
+            fileInput.value = ''; // 清空文件输入
+        }
+        
+        // 洗牌函数 - Fisher-Yates 算法
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+        
+        // 解析CSV文件
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const questions = [];
+            
+            // 跳过标题行（第一行）
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                // 使用正则表达式分割CSV（考虑引号）
+                const parts = line.match(/(?:"([^"]*)"|([^,]+))/g) || [];
+                if (parts.length < 2) continue;
+                
+                // 去除引号和逗号
+                const correctSentence = parts[0].replace(/^"|"$|,$/g, '').trim();
+                const hint = parts[1] ? parts[1].replace(/^"|"$|,$/g, '').trim() : '';
+                
+                // 自动从正确句子中提取单词并打乱
+                const words = correctSentence.split(/\s+/).filter(word => word.trim() !== '');
+                const shuffledWords = shuffleArray(words);
+                
+                if (correctSentence && words.length > 0) {
+                    questions.push({
+                        correctSentence,
+                        shuffledWords,
+                        hint: hint || ''
+                    });
+                }
+            }
+            
+            return questions;
+        }
+        
+        // 保存题库
+        function saveBank(bankName, questions) {
+            const storedBanks = localStorage.getItem(QUESTION_BANKS_KEY);
+            const banks = storedBanks ? JSON.parse(storedBanks) : {};
+            
+            banks[bankName] = questions;
+            localStorage.setItem(QUESTION_BANKS_KEY, JSON.stringify(banks));
+        }
+        
+        // 删除题库
+        function deleteBank(bankName) {
+            // 不能删除默认题库
+            if (bankName === '默认题库') {
+                showToast('errorToast', '默认题库不能删除！');
+                return;
+            }
+            
+            if (confirm(`确定要删除题库「${bankName}」吗？`)) {
+                const storedBanks = localStorage.getItem(QUESTION_BANKS_KEY);
+                if (storedBanks) {
+                    const banks = JSON.parse(storedBanks);
+                    delete banks[bankName];
+                    localStorage.setItem(QUESTION_BANKS_KEY, JSON.stringify(banks));
+                    
+                    // 如果删除的是当前题库，切换到默认题库
+                    const currentBank = localStorage.getItem(CURRENT_BANK_KEY);
+                    if (currentBank === bankName) {
+                        localStorage.setItem(CURRENT_BANK_KEY, '默认题库');
+                    }
+                    
+                    showToast('successToast', '题库删除成功！');
+                    loadBanks();
+                }
+            }
+        }
+        
+        // 显示提示信息
+        function showToast(toastId, message) {
+            const toast = document.getElementById(toastId);
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 触摸事件处理
+        function handleTouchStart(e) {
+            const target = e.target.closest('.bank-item');
+            if (target) {
+                startX = e.touches[0].clientX;
+                currentBankItem = target;
+            }
+        }
+        
+        function handleTouchMove(e) {
+            if (!currentBankItem) return;
+            
+            const currentX = e.touches[0].clientX;
+            const diffX = startX - currentX;
+            
+            // 只有向左滑动超过50px才显示删除按钮
+            if (diffX > 50) {
+                document.querySelectorAll('.bank-item').forEach(item => {
+                    item.classList.remove('show-action');
+                });
+                currentBankItem.classList.add('show-action');
+            } else if (diffX < -50) {
+                // 向右滑动隐藏删除按钮
+                currentBankItem.classList.remove('show-action');
+            }
+        }
+        
+        function handleTouchEnd() {
+            currentBankItem = null;
+        }
+        
+        // 鼠标事件处理（桌面端）
+        function handleMouseDown(e) {
+            const target = e.target.closest('.bank-item');
+            if (target) {
+                startX = e.clientX;
+                currentBankItem = target;
+            }
+        }
+        
+        function handleMouseMove(e) {
+            if (!currentBankItem) return;
+            
+            const currentX = e.clientX;
+            const diffX = startX - currentX;
+            
+            if (diffX > 50) {
+                document.querySelectorAll('.bank-item').forEach(item => {
+                    item.classList.remove('show-action');
+                });
+                currentBankItem.classList.add('show-action');
+            } else if (diffX < -50) {
+                currentBankItem.classList.remove('show-action');
+            }
+        }
+        
+        function handleMouseUp() {
+            currentBankItem = null;
+        }
+    </script>
+</body>
+</html>
