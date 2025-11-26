@@ -2,7 +2,9 @@
 
 ## 应用简介
 
-这是一个跨平台的英语练习HTTP服务器应用，旨在提供一个简单易用的英语学习环境。通过启动本地HTTP服务器，用户可以在浏览器中访问英语练习资源，进行英语学习和测试。
+这是一个跨平台的英语练习HTTP服务器应用，旨在提供一个简单易用的英语学习环境。通过启动本地HTTP服务器，用户可以在浏览器中访问英语练习资源，进行英语学习和测试
+
+![网页截图]([/assets/img/philly-magic-garden.jpg](https://github.com/bainano/english-exercises/blob/main/%E6%88%AA%E5%9B%BE/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE_26-11-2025_213251_localhost.jpeg))
 
 ## 功能特点
 
