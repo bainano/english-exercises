@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python安装指南</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #2196F3;
+            margin-top: 30px;
+        }
+        .step {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            margin: 15px 0;
+        }
+        .note {
+            background-color: #fff3e0;
+            padding: 15px;
+            border-left: 4px solid #ff9800;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #ffebee;
+            padding: 15px;
+            border-left: 4px solid #f44336;
+            margin: 15px 0;
+        }
+        ol, ul {
+            padding-left: 20px;
+        }
+        a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Python安装指南</h1>
+        
+        <div class="note">
+            <strong>注意：</strong>检测到您的系统中未安装Python或版本过低，无法运行HTTP服务器。请按照以下步骤安装Python。
+        </div>
+        
+        <h2>Windows系统安装步骤</h2>
+        <ol>
+            <li>访问Python官方网站：<a href="https://www.python.org/downloads/windows/" target="_blank">https://www.python.org/downloads/windows/</a></li>
+            <li>在页面中找到"Stable Releases"部分</li>
+            <li>点击最新的Python版本下的"Download Windows installer (64-bit)"链接</li>
+            <li>下载完成后，双击安装包开始安装</li>
+            <li>在安装界面中，请<strong>务必勾选"Add Python to PATH"</strong>选项</li>
+            <li>选择"Install Now"进行安装</li>
+            <li>安装完成后，按Win+R键，输入"cmd"打开命令提示符</li>
+            <li>输入"python --version"验证安装是否成功</li>
+        </ol>
+        
+        <div class="step">
+            <strong>重要提示：</strong>如果在安装过程中没有勾选"Add Python to PATH"，您需要手动添加或重新安装。
+        </div>
+        
+        <h2>macOS系统安装步骤</h2>
+        <ol>
+            <li>访问Python官方网站：<a href="https://www.python.org/downloads/macos/" target="_blank">https://www.python.org/downloads/macos/</a></li>
+            <li>点击最新的Python版本下的macOS安装包下载链接</li>
+            <li>下载完成后，双击.pkg文件开始安装</li>
+            <li>按照安装向导完成安装过程</li>
+            <li>打开终端(Terminal)，输入"python3 --version"验证安装是否成功</li>
+        </ol>
+        
+        <h2>Linux系统安装步骤</h2>
+        <p>大多数Linux发行版都可以通过包管理器安装Python：</p>
+        
+        <div class="step">
+            <strong>Ubuntu/Debian系统：</strong>
+            <pre>sudo apt update
+sudo apt install python3 python3-pip</pre>
+        </div>
+        
+        <div class="step">
+            <strong>Fedora系统：</strong>
+            <pre>sudo dnf install python3 python3-pip</pre>
+        </div>
+        
+        <div class="step">
+            <strong>CentOS/RHEL系统：</strong>
+            <pre>sudo yum install python3 python3-pip</pre>
+        </div>
+        
+        <h2>验证安装</h2>
+        <p>安装完成后，请打开命令行工具（Windows: 命令提示符 或 PowerShell，macOS/Linux: 终端）并输入以下命令验证：</p>
+        <div class="step">
+            <pre>python --version</pre>
+            <p>或</p>
+            <pre>python3 --version</pre>
+        </div>
+        
+        <p>如果显示类似"Python 3.x.x"的版本信息，说明安装成功。</p>
+        
+        <div class="warning">
+            <strong>常见问题：</strong>
+            <ul>
+                <li>如果提示"python不是内部或外部命令"，请检查是否勾选了"Add Python to PATH"</li>
+                <li>某些系统可能需要重启后才能正常使用python命令</li>
+                <li>Linux系统通常使用"python3"命令而不是"python"</li>
+            </ul>
+        </div>
+        
+        <p>安装完成后，请重新运行启动脚本来启动HTTP服务器。</p>
+    </div>
+</body>
+</html>
