@@ -26,10 +26,8 @@ english exercises/
 ├── favicon.png          # 网站图标
 ├── logo.ico             # Windows图标
 ├── image.png            # 应用图片资源
-├── En-start-win.lnk     # Windows快捷方式
-├── En-satrt-mac.lnk     # Mac快捷方式
 ├── README.md            # 使用说明文档
-└── logs/                # 日志目录
+└── logs/                # 日志目录(自动创建）
     ├── server.log       # 服务器日志
     └── start_app_*.log  # 启动日志
 ```
