@@ -566,7 +566,7 @@
 </div>
 <script>
     // 当前题目与答案
-    let currentQuestion = "你爱运动吗？";
+    let currentQuestion = "";
     let correctAnswer = [];
     // 题库数据
     let questionBank = [];
@@ -728,12 +728,12 @@
         
         try {
             const storedBanks = localStorage.getItem(QUESTION_BANKS_KEY);
-            const currentBankName = localStorage.getItem(CURRENT_BANK_KEY) || '默认题库';
+            const currentBankName = localStorage.getItem(CURRENT_BANK_KEY);
             
             console.log('从localStorage获取的数据:', storedBanks);
             console.log('当前题库名称:', currentBankName);
             
-            if (storedBanks) {
+            if (storedBanks && currentBankName) {
                 const banks = JSON.parse(storedBanks);
                 console.log('解析后的题库数据:', banks);
                 if (banks[currentBankName] && banks[currentBankName].length > 0) {
@@ -1068,10 +1068,21 @@
     window.onload = function () {
         init();
         initEventListeners();
-        renderQuestion();
-        updateProgressBar(); // 初始化进度条
-        // 检查是否有未完成进度
-        showProgressModal();
+        
+        // 检查是否有题库数据
+        if (questionBank.length === 0) {
+            // 没有题库数据，显示提示信息
+            document.getElementById('questionDialog').textContent = '请先导入题库';
+            document.getElementById('answerArea').innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">暂无题库数据，请点击右上角"题库"按钮导入题库</p>';
+            document.getElementById('candidateArea').innerHTML = '';
+            document.getElementById('mainBtn').style.display = 'none';
+        } else {
+            renderQuestion();
+            updateProgressBar(); // 初始化进度条
+            // 检查是否有未完成进度
+            showProgressModal();
+        }
+        
         // 确保在页面加载完成后调整占位块尺寸
         setTimeout(updatePlaceholderSizes, 100);
     };

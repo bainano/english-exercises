@@ -1,18 +1,7 @@
-// 设置测试题库数据到localStorage
-const testBank = {
-  "默认题库": [
-    {
-      "hint": "你好吗？",
-      "correctSentence": "How are you?"
-    },
-    {
-      "hint": "我很好，谢谢。",
-      "correctSentence": "I am fine, thank you."
-    }
-  ]
-};
+// 初始化空的题库结构
+const emptyBanks = {};
 
-localStorage.setItem('questionBanks', JSON.stringify(testBank));
-localStorage.setItem('currentBank', '默认题库');
+localStorage.setItem('questionBanks', JSON.stringify(emptyBanks));
+localStorage.removeItem('currentBank');
 
-console.log('测试题库已设置到localStorage');
+console.log('题库已初始化为空');

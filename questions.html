@@ -299,7 +299,7 @@
         // 加载题库列表
         function loadBanks() {
             const storedBanks = localStorage.getItem(QUESTION_BANKS_KEY);
-            const currentBankName = localStorage.getItem(CURRENT_BANK_KEY) || '默认题库';
+            const currentBankName = localStorage.getItem(CURRENT_BANK_KEY);
             
             if (!storedBanks) {
                 bankList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">暂无题库</p>';
@@ -458,12 +458,6 @@
         
         // 删除题库
         function deleteBank(bankName) {
-            // 不能删除默认题库
-            if (bankName === '默认题库') {
-                showToast('errorToast', '默认题库不能删除！');
-                return;
-            }
-            
             if (confirm(`确定要删除题库「${bankName}」吗？`)) {
                 const storedBanks = localStorage.getItem(QUESTION_BANKS_KEY);
                 if (storedBanks) {
@@ -471,10 +465,10 @@
                     delete banks[bankName];
                     localStorage.setItem(QUESTION_BANKS_KEY, JSON.stringify(banks));
                     
-                    // 如果删除的是当前题库，切换到默认题库
+                    // 如果删除的是当前题库，清空currentBank
                     const currentBank = localStorage.getItem(CURRENT_BANK_KEY);
                     if (currentBank === bankName) {
-                        localStorage.setItem(CURRENT_BANK_KEY, '默认题库');
+                        localStorage.removeItem(CURRENT_BANK_KEY);
                     }
                     
                     showToast('successToast', '题库删除成功！');
